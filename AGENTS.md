@@ -6,3 +6,11 @@
 - Do not add a dependency without justification.
 - Run relevant tests after making a modification.
 - Summarize the changes made and report any limitations.
+
+## Dependencies
+
+- Do not install or upgrade dependencies without checking the target version first.
+- Prefer stable and actively supported versions.
+- Verify compatibility with the existing stack before changing a dependency.
+- Do not assume that the model's knowledge of the latest version is current.
+- Report the selected version and the reason for choosing it before installation.
