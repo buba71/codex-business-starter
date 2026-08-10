@@ -4,6 +4,13 @@
 
 This document describes the target architecture for V1. The repository is currently a minimal starter and does not yet contain the backend, frontend, database, Docker, or test implementation described below.
 
+## Validated runtime versions
+
+- PHP: `8.4`
+- Symfony: `7.4 LTS`
+
+This combination was selected for its long-term support horizon, compatibility with the modular REST architecture, and suitability for reuse across multiple client projects. Dependencies have not yet been installed.
+
 ## Architectural goals
 
 V1 is designed as a modular business application with a clear separation between the user interface, HTTP transport, business rules, and persistence. The architecture should keep framework-specific concerns at the edges so that important business behavior remains easy to test and evolve.
