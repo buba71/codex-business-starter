@@ -14,3 +14,7 @@
 - Verify compatibility with the existing stack before changing a dependency.
 - Do not assume that the model's knowledge of the latest version is current.
 - Report the selected version and the reason for choosing it before installation.
+
+## Backend validation
+
+From `backend/`, run the relevant project checks before considering backend changes complete.
