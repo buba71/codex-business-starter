@@ -9,11 +9,11 @@ This document describes the target architecture for V1. The repository is curren
 - PHP: `8.4`
 - Symfony: `7.4 LTS`
 
-This combination was selected for its long-term support horizon, compatibility with the modular REST architecture, and suitability for reuse across multiple client projects. Dependencies have not yet been installed.
+This combination was selected for its long-term support horizon, compatibility with the REST architecture, and suitability for reuse across multiple client projects. Dependencies have not yet been installed.
 
 ## Architectural goals
 
-V1 is designed as a modular business application with a clear separation between the user interface, HTTP transport, business rules, and persistence. The architecture should keep framework-specific concerns at the edges so that important business behavior remains easy to test and evolve.
+V1 is designed as a business application with a clear separation between the user interface, HTTP transport, business rules, and persistence. The architecture should maintain a clear separation of responsibilities while following standard Symfony conventions, so that the application remains easy to understand, test, and evolve.
 
 ## System overview
 
@@ -31,7 +31,7 @@ Browser
   -> Vue 3 frontend
   -> Symfony REST API
   -> Thin controller
-  -> Application service
+  -> Service
   -> Repository
   -> PostgreSQL
 ```
@@ -42,7 +42,7 @@ Responses travel back through the same layers. Controllers translate HTTP reques
 
 Symfony is the backend framework and the boundary for HTTP, configuration, dependency injection, validation, serialization, and persistence integration.
 
-The backend is organized into business modules. Each module owns a coherent capability and should keep its application services, domain concepts, repositories, API contracts, and tests close together where practical. Shared technical concerns belong in dedicated infrastructure or shared directories rather than being copied between modules.
+The backend follows standard Symfony conventions and is organized primarily by technical responsibility. Business logic belongs in services, persistence belongs in repositories, and HTTP concerns belong in controllers. The structure should remain straightforward as V1 grows.
 
 ### Thin controllers
 
@@ -50,7 +50,7 @@ REST controllers have one primary responsibility: translate an HTTP request into
 
 ### Services contain business logic
 
-Application services represent use cases, such as creating, updating, listing, or completing a business object. They coordinate domain rules, authorization checks, transactions, and calls to repositories. Services should depend on interfaces where that improves testability and should return application/domain results rather than leaking HTTP concerns into the business layer.
+Application services represent use cases, such as creating, updating, listing, or completing a business object. They coordinate business rules, authorization checks, transactions, and calls to repositories. Use interfaces only where they provide a concrete benefit, such as multiple implementations or a meaningful testing boundary. Services should return business results rather than leaking HTTP concerns into the business layer.
 
 ### Repositories contain data access
 
@@ -83,7 +83,7 @@ API responses should use stable JSON contracts. Validation and business errors s
 
 ## PostgreSQL
 
-PostgreSQL is the V1 relational database. The schema is managed through versioned migrations, and database access is performed through repositories. Database constraints should enforce invariants that are naturally relational, while business rules that require application context remain in services/domain code.
+PostgreSQL is the V1 relational database. The schema is managed through versioned migrations, and database access is performed through repositories. Database constraints should enforce invariants that are naturally relational, while business rules that require application context remain in services and other backend business components.
 
 The application should use separate configuration for development, testing, and production databases. Tests that exercise SQL, mappings, transactions, or constraints should run against a disposable PostgreSQL test database.
 
@@ -97,17 +97,20 @@ Docker provides reproducible local and deployment environments. A Docker Compose
 
 Environment-specific values such as credentials, ports, and API URLs must be supplied through environment configuration rather than committed secrets. Containers should expose only the ports needed for local development or the selected deployment topology. Health checks and a persistent PostgreSQL volume should be included in the Compose configuration.
 
-## Modular architecture
+## Backend organization
 
-Modules are organized around business capabilities rather than technical layers alone. A module should expose a small public application surface and keep its internal details private. A typical module contains:
+The backend uses conventional Symfony directories under `backend/src/`:
 
-- API adapters: controllers, request/response DTOs, and serializers.
-- Application: use-case services and input/output models.
-- Domain: entities, value objects, and business rules when needed.
-- Infrastructure: repository implementations and framework/database wiring.
-- Tests: unit, integration, and API behavior tests relevant to the module.
+- `Controller/`: REST controllers that translate HTTP requests and responses.
+- `Entity/`: Doctrine entities representing persisted business data.
+- `Repository/`: Doctrine repositories and persistence queries.
+- `Service/`: Use-case coordination and business logic.
+- `DTO/`: Request and response data transfer objects.
+- `Enum/`: Shared enumerations used by the backend.
 
-Dependencies should point inward toward business behavior. Infrastructure and HTTP adapters may depend on application/domain code; domain code should not depend on Symfony controllers or Vue.
+These directories are a practical V1 structure, not a requirement to create every directory in advance. Business logic must remain outside controllers, repositories must handle persistence access, and the backend remains the source of truth for business rules.
+
+Domain-based modularization may be introduced later if real project complexity justifies it. It should be adopted in response to concrete growth and boundaries, rather than required as part of the V1 starting structure.
 
 ## Testing strategy
 
@@ -129,12 +132,12 @@ The test suite should run in Docker-compatible environments and should not requi
 │   ├── migrations/
 │   ├── public/
 │   ├── src/
-│   │   ├── ModuleName/
-│   │   │   ├── Application/
-│   │   │   ├── Domain/
-│   │   │   ├── Infrastructure/
-│   │   │   └── Presentation/Api/
-│   │   └── Shared/
+│   │   ├── Controller/
+│   │   ├── DTO/
+│   │   ├── Entity/
+│   │   ├── Enum/
+│   │   ├── Repository/
+│   │   └── Service/
 │   ├── tests/
 │   │   ├── Integration/
 │   │   ├── Functional/
@@ -163,4 +166,4 @@ The test suite should run in Docker-compatible environments and should not requi
 └── README.md
 ```
 
-This structure is a target, not a claim that all listed directories and files already exist. As implementation begins, module names should replace `ModuleName`, and the structure should only grow when a real feature requires it.
+This structure is a target, not a claim that all listed directories and files already exist. Directories should only grow when a real feature requires them. If the project later develops enough complexity to justify domain-based modularization, the backend structure can evolve accordingly.
