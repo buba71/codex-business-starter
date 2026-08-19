@@ -2,6 +2,7 @@
 
 - Use english
 - Analyze the existing code before making any modifications.
+- When required business information is missing from both the task and project context, report the ambiguity before implementing.
 - Limit changes to the requested scope.
 - Do not add dependencies without justification.
 - Run relevant checks after making a modification, including functional checks when applicable.
