@@ -3,8 +3,8 @@
 - Use english
 - Analyze the existing code before making any modifications.
 - Limit changes to the requested scope.
-- Do not add a dependency without justification.
-- Run relevant tests after making a modification.
+- Do not add dependencies without justification.
+- Run relevant checks after making a modification, including functional checks when applicable.
 - Summarize the changes made and report any limitations.
 
 ## Dependencies
