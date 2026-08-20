@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Customer\Domain;
+namespace App\Enum;
 
 enum CustomerStatus: string
 {
