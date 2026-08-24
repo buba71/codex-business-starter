@@ -4,7 +4,6 @@ namespace App\Service;
 
 use App\Entity\Customer;
 use App\Enum\CustomerStatus;
-use App\Repository\CustomerRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Validator\Exception\ValidationFailedException;
