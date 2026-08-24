@@ -11,6 +11,8 @@
 
 4. **Analyze existing code**
    Understand the current architecture, conventions, and implementation before making changes.
+   Check whether the current stack already provides a suitable framework/tool/convention.
+   If a new structural dependency could materially reduce complexity, surface it as an architectural decision before implementation. Do not introduce it without explicit approval.
 
 5. **Plan if necessary**
    Break down tasks that involve multiple steps or meaningful design decisions.
