@@ -51,17 +51,26 @@ final class CustomerControllerTest extends WebTestCase
         yield 'unsupported status' => [['name' => 'Ada', 'email' => 'ada@example.com', 'status' => 'PENDING']];
     }
 
-    public function testBlankNameReturnsValidationError(): void
+    #[DataProvider('blankNameProvider')]
+    public function testBlankNameReturnsValidationError(string $name): void
     {
         $client = $this->client;
         $client->jsonRequest('POST', '/api/v1/customers', [
-            'name' => '',
+            'name' => $name,
             'email' => 'ada@example.com',
             'status' => 'ACTIVE',
         ]);
 
         self::assertResponseStatusCodeSame(422);
         self::assertSame('validation_failed', json_decode($client->getResponse()->getContent(), true)['error']['code']);
+    }
+
+    public static function blankNameProvider(): iterable
+    {
+        yield 'empty string' => [''];
+        yield 'space' => [' '];
+        yield 'tab' => ["\t"];
+        yield 'newline' => ["\n"];
     }
 
     public function testInvalidEmailReturnsValidationError(): void

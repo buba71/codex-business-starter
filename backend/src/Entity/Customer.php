@@ -16,7 +16,7 @@ class Customer
     private ?int $id=null;
 
     #[ORM\Column(type: Types::STRING)]
-    #[Assert\NotBlank]
+    #[Assert\NotBlank(normalizer: 'trim')]
     private string $name;
 
     #[ORM\Column(type: Types::STRING)]
