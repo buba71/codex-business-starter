@@ -114,4 +114,37 @@ final class CustomerControllerTest extends WebTestCase
         yield 'active' => ['ACTIVE'];
         yield 'inactive' => ['INACTIVE'];
     }
+
+    public function testExistingCustomerIsReturned(): void
+    {
+        $customer = (new Customer())
+            ->setName('Grace Hopper')
+            ->setEmail('grace@example.com')
+            ->setStatus(CustomerStatus::ACTIVE);
+
+        $this->entityManager->persist($customer);
+        $this->entityManager->flush();
+
+        $this->client->request('GET', sprintf('/api/v1/customers/%d', $customer->getId()));
+
+        self::assertResponseIsSuccessful();
+        self::assertSame([
+            'id' => $customer->getId(),
+            'name' => 'Grace Hopper',
+            'email' => 'grace@example.com',
+            'status' => 'ACTIVE',
+        ], json_decode($this->client->getResponse()->getContent(), true));
+    }
+
+    public function testMissingCustomerReturnsNotFound(): void
+    {
+        $this->client->request('GET', '/api/v1/customers/2147483647');
+
+        self::assertResponseStatusCodeSame(404);
+        self::assertSame(['error' => [
+            'code' => 'customer_not_found',
+            'message' => 'Customer not found.',
+            'details' => [],
+        ]], json_decode($this->client->getResponse()->getContent(), true));
+    }
 }

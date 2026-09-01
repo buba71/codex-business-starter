@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Enum\CustomerStatus;
 use App\Service\CustomerCreator;
+use App\Service\CustomerRetriever;
 use Symfony\Component\HttpFoundation\Exception\JsonException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -12,8 +13,10 @@ use Symfony\Component\Validator\Exception\ValidationFailedException;
 
 final class CustomerController
 {
-    public function __construct(private CustomerCreator $customerCreator)
-    {
+    public function __construct(
+        private CustomerCreator $customerCreator,
+        private CustomerRetriever $customerRetriever,
+    ) {
     }
 
     #[Route('/api/v1/customers', name: 'customer_create', methods: ['POST'])]
@@ -73,6 +76,27 @@ final class CustomerController
             'email' => $customer->getEmail(),
             'status' => $customer->getStatus()->value,
         ], JsonResponse::HTTP_CREATED);
+    }
+
+    #[Route('/api/v1/customers/{id}', name: 'customer_get', methods: ['GET'])]
+    public function get(int $id): JsonResponse
+    {
+        $customer = $this->customerRetriever->getById($id);
+
+        if (null === $customer) {
+            return $this->errorResponse(
+                'customer_not_found',
+                'Customer not found.',
+                JsonResponse::HTTP_NOT_FOUND,
+            );
+        }
+
+        return new JsonResponse([
+            'id' => $customer->getId(),
+            'name' => $customer->getName(),
+            'email' => $customer->getEmail(),
+            'status' => $customer->getStatus()->value,
+        ]);
     }
 
     /** @param list<array{field: string, message: string}> $details */
