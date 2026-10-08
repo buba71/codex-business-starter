@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite';
+import { defineConfig } from 'vitest/config';
 import vue from '@vitejs/plugin-vue';
 import Symfony from '@symfony/reprise/vite';
 
@@ -12,4 +12,7 @@ export default defineConfig({
             stimulus: './assets/controllers.json',
         }),
     ],
+    test: {
+        environment: 'jsdom',
+    },
 });
