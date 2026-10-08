@@ -1,0 +1,11 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Customer{% endblock %}
+
+{% block body %}
+    <main>
+        <h1>Customer</h1>
+
+        <div {{ vue_component('CustomerDisplay', { id: id }) }}></div>
+    </main>
+{% endblock %}
