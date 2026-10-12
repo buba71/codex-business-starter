@@ -29,3 +29,13 @@ The health endpoint is available at `http://127.0.0.1:8001/health`. FastAPI's de
 .venv/bin/python -m pip check
 .venv/bin/python -m pytest -q
 ```
+
+## Experimental status
+
+This service was created during Codex training (Atelier 16).
+
+- Development branch: `feat/fastapi-training`
+- Not merged into `main`
+- No integration with the Symfony/Vue application
+- Integration decision deferred to Week 4
+- Any integration requires explicit human approval
