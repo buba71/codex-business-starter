@@ -19,3 +19,10 @@
 ## Backend validation
 
 From `backend/`, run the relevant project checks before considering backend changes complete.
+
+## Architecture and scope
+
+- Symfony and Vue are the primary application. Keep application work in `backend/` unless the task explicitly requires otherwise.
+- `ai-service/` is optional and experimental. It is not part of the default application runtime or deployment.
+- Do not add cross-service calls, shared persistence, authentication, Docker/Compose integration, deployment changes, or other integration between `backend/` and `ai-service/` without explicit approval.
+- Do not merge experimental `ai-service/` code into `main` without explicit approval.
