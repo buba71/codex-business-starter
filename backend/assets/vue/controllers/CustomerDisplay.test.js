@@ -58,9 +58,26 @@ describe('CustomerDisplay', () => {
         await flushPromises();
 
         expect(wrapper.get('[role="alert"]').text()).toBe('Customer not found.');
+        expect(wrapper.find('button').exists()).toBe(false);
     });
 
-    it('displays a generic error for another HTTP failure', async () => {
+    it('does not offer a retry for another 4xx response', async () => {
+        vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+            ok: false,
+            status: 403,
+        }));
+
+        const wrapper = mount(CustomerDisplay, {
+            props: { id: customer.id },
+        });
+
+        await flushPromises();
+
+        expect(wrapper.get('[role="alert"]').text()).toBe('Unable to load the customer.');
+        expect(wrapper.find('button').exists()).toBe(false);
+    });
+
+    it('offers a retry for a 5xx response', async () => {
         vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
             ok: false,
             status: 500,
@@ -73,9 +90,10 @@ describe('CustomerDisplay', () => {
         await flushPromises();
 
         expect(wrapper.get('[role="alert"]').text()).toBe('Unable to load the customer.');
+        expect(wrapper.get('button').text()).toBe('Retry');
     });
 
-    it('displays a network error when fetch fails', async () => {
+    it('displays a network error and offers a retry when fetch fails', async () => {
         vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('Network failure')));
 
         const wrapper = mount(CustomerDisplay, {
@@ -87,5 +105,38 @@ describe('CustomerDisplay', () => {
         expect(wrapper.get('[role="alert"]').text()).toBe(
             'Unable to load the customer. Please check your connection and try again.',
         );
+        expect(wrapper.get('button').text()).toBe('Retry');
+    });
+
+    it('clears the error, restores loading, and issues a fresh request on retry', async () => {
+        let resolveRetry;
+        const fetchMock = vi.fn()
+            .mockRejectedValueOnce(new Error('Network failure'))
+            .mockImplementationOnce(() => new Promise((resolve) => {
+                resolveRetry = resolve;
+            }));
+        vi.stubGlobal('fetch', fetchMock);
+
+        const wrapper = mount(CustomerDisplay, {
+            props: { id: customer.id },
+        });
+
+        await flushPromises();
+        await wrapper.get('button').trigger('click');
+
+        expect(wrapper.text()).toContain('Loading customer...');
+        expect(wrapper.find('[role="alert"]').exists()).toBe(false);
+        expect(fetchMock).toHaveBeenCalledTimes(2);
+        expect(fetchMock).toHaveBeenNthCalledWith(2, '/api/v1/customers/42');
+
+        resolveRetry({
+            ok: true,
+            status: 200,
+            json: vi.fn().mockResolvedValue(customer),
+        });
+        await flushPromises();
+
+        expect(wrapper.text()).toContain('Grace Hopper');
+        expect(wrapper.find('button').exists()).toBe(false);
     });
 });
