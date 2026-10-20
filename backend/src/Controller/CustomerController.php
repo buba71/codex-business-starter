@@ -9,6 +9,7 @@ use Symfony\Component\HttpFoundation\Exception\JsonException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Component\Validator\Exception\ValidationFailedException;
 
 final class CustomerController
@@ -16,7 +17,14 @@ final class CustomerController
     public function __construct(
         private CustomerCreator $customerCreator,
         private CustomerRetriever $customerRetriever,
+        private CsrfTokenManagerInterface $csrfTokenManager,
     ) {
+    }
+
+    #[Route('/api/v1/customers/csrf-token', name: 'customer_csrf_token', methods: ['GET'], priority: 10)]
+    public function csrfToken(): JsonResponse
+    {
+        return new JsonResponse(['token' => $this->csrfTokenManager->getToken('customer_api')->getValue()]);
     }
 
     #[Route('/api/v1/customers', name: 'customer_create', methods: ['POST'])]
