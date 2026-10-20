@@ -1,21 +1,28 @@
-# Project Rules
+# Project Instructions
 
-- Use english
-- Analyze the existing code before making any modifications.
-- When required business information is missing from both the task and project context, report the ambiguity before implementing.
-- Limit changes to the requested scope.
-- Do not add dependencies without justification.
-- Run relevant checks after making a modification, including functional checks when applicable.
-- Summarize the changes made and report any limitations.
+## Context
 
-## Dependencies
+- The application uses Symfony 7.4, PHP, Doctrine and PostgreSQL in `backend/`.
+- Vue 3 sources and colocated Vitest tests are in `backend/assets/vue/`; PHP tests are in `backend/tests/`.
+- Write code, comments, commits and technical documentation in English.
 
-- Do not install or upgrade dependencies without checking the target version first.
-- Prefer stable and actively supported versions.
-- Verify compatibility with the existing stack before changing a dependency.
-- Do not assume that the model's knowledge of the latest version is current.
-- Report the selected version and the reason for choosing it before installation.
+## Working rules
 
-## Backend validation
+- Inspect relevant code, configuration and project conventions before changing anything.
+- Keep changes scoped to the request and preserve unrelated local work.
+- Raise a missing business requirement only when it blocks a sound implementation.
+- Protect authentication, authorization, user data and secrets; report security-sensitive trade-offs.
+- Add or change a dependency only with a clear justification, a compatible supported version, and verification against the existing stack.
+- Run validation proportionate to the change, including relevant functional checks when practical.
+- In the final report, state what changed, validation performed, and any remaining limitations.
 
-From `backend/`, run the relevant project checks before considering backend changes complete.
+## Agent profiles
+
+- The profiles in `.codex/agents/` provide specialized backend, frontend and review guidance only when those agents are explicitly delegated work.
+- Ordinary tasks do not require multi-agent orchestration, worktrees or pull requests.
+
+## GitHub delivery
+
+- Keep pull requests focused and describe their scope, validation and known limitations.
+- Request review when the change warrants it, especially for security, data, dependency or API-contract changes.
+- Do not create branches, push, merge or modify pull requests unless requested.
