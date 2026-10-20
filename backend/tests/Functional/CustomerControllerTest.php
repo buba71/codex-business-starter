@@ -14,6 +14,7 @@ final class CustomerControllerTest extends WebTestCase
 {
     private EntityManagerInterface $entityManager;
     private KernelBrowser $client;
+    private string $csrfToken;
 
     protected function setUp(): void
     {
@@ -28,6 +29,8 @@ final class CustomerControllerTest extends WebTestCase
         $this->entityManager->persist($admin);
         $this->entityManager->flush();
         $this->client->loginUser($admin);
+        $this->client->request('GET', '/api/v1/customers/csrf-token');
+        $this->csrfToken = json_decode($this->client->getResponse()->getContent(), true)['token'];
     }
 
     public function testAnonymousGetReturnsUnauthorizedJson(): void
@@ -69,10 +72,34 @@ final class CustomerControllerTest extends WebTestCase
         self::assertSame('access_denied', json_decode($this->client->getResponse()->getContent(), true)['error']['code']);
     }
 
+    public function testAdminPostWithoutCsrfTokenReturnsForbiddenJson(): void
+    {
+        $this->client->jsonRequest('POST', '/api/v1/customers', [
+            'name' => 'Ada Lovelace',
+            'email' => 'ada-no-token@example.com',
+            'status' => 'ACTIVE',
+        ]);
+
+        self::assertResponseStatusCodeSame(403);
+        self::assertSame('csrf_token_invalid', json_decode($this->client->getResponse()->getContent(), true)['error']['code']);
+    }
+
+    public function testAdminPostWithInvalidCsrfTokenReturnsForbiddenJson(): void
+    {
+        $this->client->jsonRequest('POST', '/api/v1/customers', [
+            'name' => 'Ada Lovelace',
+            'email' => 'ada-invalid-token@example.com',
+            'status' => 'ACTIVE',
+        ], ['HTTP_X_CSRF_TOKEN' => 'invalid-token']);
+
+        self::assertResponseStatusCodeSame(403);
+        self::assertSame('csrf_token_invalid', json_decode($this->client->getResponse()->getContent(), true)['error']['code']);
+    }
+
     public function testMalformedJsonReturnsBadRequest(): void
     {
         $client = $this->client;
-        $client->request('POST', '/api/v1/customers', [], [], ['CONTENT_TYPE' => 'application/json'], '{');
+        $client->request('POST', '/api/v1/customers', [], [], ['CONTENT_TYPE' => 'application/json', 'HTTP_X_CSRF_TOKEN' => $this->csrfToken], '{');
 
         self::assertResponseStatusCodeSame(400);
         self::assertSame(['error' => [
@@ -86,7 +113,7 @@ final class CustomerControllerTest extends WebTestCase
     public function testInvalidInputReturnsBadRequest(array $payload): void
     {
         $client = $this->client;
-        $client->jsonRequest('POST', '/api/v1/customers', $payload);
+        $client->jsonRequest('POST', '/api/v1/customers', $payload, ['HTTP_X_CSRF_TOKEN' => $this->csrfToken]);
 
         self::assertResponseStatusCodeSame(400);
         self::assertSame('invalid_input', json_decode($client->getResponse()->getContent(), true)['error']['code']);
@@ -107,7 +134,7 @@ final class CustomerControllerTest extends WebTestCase
             'name' => $name,
             'email' => 'ada@example.com',
             'status' => 'ACTIVE',
-        ]);
+        ], ['HTTP_X_CSRF_TOKEN' => $this->csrfToken]);
 
         self::assertResponseStatusCodeSame(422);
         self::assertSame('validation_failed', json_decode($client->getResponse()->getContent(), true)['error']['code']);
@@ -128,7 +155,7 @@ final class CustomerControllerTest extends WebTestCase
             'name' => 'Ada',
             'email' => 'not-an-email',
             'status' => 'ACTIVE',
-        ]);
+        ], ['HTTP_X_CSRF_TOKEN' => $this->csrfToken]);
 
         self::assertResponseStatusCodeSame(422);
         self::assertSame('validation_failed', json_decode($client->getResponse()->getContent(), true)['error']['code']);
@@ -142,7 +169,7 @@ final class CustomerControllerTest extends WebTestCase
             'name' => 'Ada Lovelace',
             'email' => "ada-$status@example.com",
             'status' => $status,
-        ]);
+        ], ['HTTP_X_CSRF_TOKEN' => $this->csrfToken]);
 
         self::assertResponseStatusCodeSame(201);
         $response = json_decode($client->getResponse()->getContent(), true);
