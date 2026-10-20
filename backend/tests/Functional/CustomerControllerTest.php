@@ -3,6 +3,7 @@
 namespace App\Tests\Functional;
 
 use App\Entity\Customer;
+use App\Entity\User;
 use App\Enum\CustomerStatus;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -19,6 +20,53 @@ final class CustomerControllerTest extends WebTestCase
         $this->client = static::createClient();
 
         $this->entityManager = self::getContainer()->get(EntityManagerInterface::class);
+
+        $admin = (new User())
+            ->setEmail('admin@example.com')
+            ->setRoles([User::ROLE_ADMIN])
+            ->setPassword('test-password');
+        $this->entityManager->persist($admin);
+        $this->entityManager->flush();
+        $this->client->loginUser($admin);
+    }
+
+    public function testAnonymousGetReturnsUnauthorizedJson(): void
+    {
+        $client = $this->client;
+        $client->restart();
+        $client->request('GET', '/api/v1/customers/1');
+
+        self::assertResponseStatusCodeSame(401);
+        self::assertSame('application/json', $client->getResponse()->headers->get('content-type'));
+        self::assertSame('authentication_required', json_decode($client->getResponse()->getContent(), true)['error']['code']);
+    }
+
+    public function testAnonymousPostReturnsUnauthorizedJson(): void
+    {
+        $client = $this->client;
+        $client->restart();
+        $client->jsonRequest('POST', '/api/v1/customers', []);
+
+        self::assertResponseStatusCodeSame(401);
+        self::assertSame('authentication_required', json_decode($client->getResponse()->getContent(), true)['error']['code']);
+    }
+
+    public function testNonAdminGetReturnsForbiddenJson(): void
+    {
+        $this->client->loginUser($this->createUser('user@example.com'));
+        $this->client->request('GET', '/api/v1/customers/1');
+
+        self::assertResponseStatusCodeSame(403);
+        self::assertSame('access_denied', json_decode($this->client->getResponse()->getContent(), true)['error']['code']);
+    }
+
+    public function testNonAdminPostReturnsForbiddenJson(): void
+    {
+        $this->client->loginUser($this->createUser('user@example.com'));
+        $this->client->jsonRequest('POST', '/api/v1/customers', []);
+
+        self::assertResponseStatusCodeSame(403);
+        self::assertSame('access_denied', json_decode($this->client->getResponse()->getContent(), true)['error']['code']);
     }
 
     public function testMalformedJsonReturnsBadRequest(): void
@@ -146,5 +194,16 @@ final class CustomerControllerTest extends WebTestCase
             'message' => 'Customer not found.',
             'details' => [],
         ]], json_decode($this->client->getResponse()->getContent(), true));
+    }
+
+    private function createUser(string $email): User
+    {
+        $user = (new User())
+            ->setEmail($email)
+            ->setPassword('test-password');
+        $this->entityManager->persist($user);
+        $this->entityManager->flush();
+
+        return $user;
     }
 }
