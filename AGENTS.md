@@ -21,6 +21,16 @@
 - The profiles in `.codex/agents/` provide specialized backend, frontend and review guidance only when those agents are explicitly delegated work.
 - Ordinary tasks do not require multi-agent orchestration, worktrees or pull requests.
 
+## Git workflow
+
+- Before implementing a feature, bug fix or refactoring, inspect the current branch and Git working tree.
+- Work on a dedicated feature or fix branch, never directly on `main`. If a task starts on `main`, stop and request authorization to create or switch to a dedicated branch.
+- Creating or switching branches requires explicit user authorization unless it is granted in the current request.
+- Never reset, stash, discard or overwrite existing user changes without explicit permission; preserve unrelated files and changes.
+- Never commit, push, merge or delete branches without explicit authorization.
+- Use Git worktrees when parallel tasks require isolated working directories.
+- Before committing, verify that only the intended files are staged.
+
 ## GitHub delivery
 
 - Keep pull requests focused and describe their scope, validation and known limitations.

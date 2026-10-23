@@ -38,7 +38,10 @@ describe('CustomerDisplay', () => {
 
         await flushPromises();
 
-        expect(globalThis.fetch).toHaveBeenCalledWith('/api/v1/customers/42');
+        expect(globalThis.fetch).toHaveBeenCalledWith('/api/v1/customers/42', {
+            credentials: 'same-origin',
+            method: 'GET',
+        });
         expect(wrapper.text()).toContain('42');
         expect(wrapper.text()).toContain('Grace Hopper');
         expect(wrapper.text()).toContain('grace@example.com');
@@ -127,7 +130,10 @@ describe('CustomerDisplay', () => {
         expect(wrapper.text()).toContain('Loading customer...');
         expect(wrapper.find('[role="alert"]').exists()).toBe(false);
         expect(fetchMock).toHaveBeenCalledTimes(2);
-        expect(fetchMock).toHaveBeenNthCalledWith(2, '/api/v1/customers/42');
+        expect(fetchMock).toHaveBeenNthCalledWith(2, '/api/v1/customers/42', {
+            credentials: 'same-origin',
+            method: 'GET',
+        });
 
         resolveRetry({
             ok: true,

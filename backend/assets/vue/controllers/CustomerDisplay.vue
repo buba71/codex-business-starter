@@ -1,5 +1,6 @@
 <script setup>
 import { onMounted, ref } from 'vue';
+import { get, NetworkError } from '../http/client.js';
 
 const props = defineProps({
     id: {
@@ -18,26 +19,24 @@ async function loadCustomer() {
     error.value = null;
     retryable.value = false;
 
-    let response;
-
     try {
-        response = await fetch(`/api/v1/customers/${encodeURIComponent(props.id)}`);
-
-        if (response.status === 404) {
+        const response = await get(`/api/v1/customers/${encodeURIComponent(props.id)}`);
+        customer.value = await response.json();
+    } catch (requestError) {
+        if (requestError.status === 404) {
             error.value = 'Customer not found.';
             return;
         }
 
-        if (!response.ok) {
+        if (requestError instanceof NetworkError) {
+            error.value = 'Unable to load the customer. Please check your connection and try again.';
+            retryable.value = true;
+        } else if (requestError.status >= 500 && requestError.status < 600) {
             error.value = 'Unable to load the customer.';
-            retryable.value = response.status >= 500 && response.status < 600;
-            return;
+            retryable.value = true;
+        } else {
+            error.value = 'Unable to load the customer.';
         }
-
-        customer.value = await response.json();
-    } catch {
-        error.value = 'Unable to load the customer. Please check your connection and try again.';
-        retryable.value = response === undefined;
     } finally {
         loading.value = false;
     }
