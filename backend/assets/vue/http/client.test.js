@@ -173,6 +173,26 @@ describe('http client', () => {
         });
     });
 
+    it('returns an HTTP error when the CSRF response body is already consumed', async () => {
+        const errorResponse = new Response(JSON.stringify({
+            error: { code: 'access_denied' },
+        }), {
+            headers: { 'Content-Type': 'application/json' },
+            status: 403,
+        });
+        await errorResponse.json();
+
+        const fetchMock = vi.fn()
+            .mockResolvedValueOnce(response(200, { token: 'csrf-token' }))
+            .mockResolvedValueOnce(errorResponse);
+        vi.stubGlobal('fetch', fetchMock);
+
+        await expect(post('/mutating')).rejects.toMatchObject({
+            name: 'HttpError',
+            status: 403,
+        });
+    });
+
     it('preserves unauthorized responses as UnauthorizedError', async () => {
         const fetchMock = vi.fn().mockResolvedValueOnce(response(401));
         vi.stubGlobal('fetch', fetchMock);
