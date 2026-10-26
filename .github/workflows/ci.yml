@@ -64,6 +64,19 @@ jobs:
       - name: Install PHP dependencies
         run: composer install --no-interaction --prefer-dist --no-progress
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install JavaScript dependencies
+        run: npm ci
+
+      - name: Build frontend assets for functional tests
+        run: npm run build
+
       - name: Run Doctrine migrations
         run: php bin/console doctrine:migrations:migrate --no-interaction --env=test
         env:
