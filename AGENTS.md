@@ -23,16 +23,16 @@
 
 ## Git workflow
 
-- Before implementing a feature, bug fix or refactoring, inspect the current branch and Git working tree.
-- Work on a dedicated feature or fix branch, never directly on `main`. If a task starts on `main`, stop and request authorization to create or switch to a dedicated branch.
-- Creating or switching branches requires explicit user authorization unless it is granted in the current request.
-- Never reset, stash, discard or overwrite existing user changes without explicit permission; preserve unrelated files and changes.
-- Never commit, push, merge or delete branches without explicit authorization.
-- Use Git worktrees when parallel tasks require isolated working directories.
-- Before committing, verify that only the intended files are staged.
+- Before development tasks, perform and report a Git preflight covering the current branch, upstream, working tree and untracked files, unfinished Git operations, unpublished commits, remote divergence when verifiable, and registered worktrees. Treat detached HEAD as a condition to assess, not automatically as an error; it can be normal in a Codex-managed worktree. Keep the report concise when everything is normal, report remote verification limitations, and stop only for a genuine risk or blocker.
+- Never implement changes directly on `main`; use a dedicated feature or fix branch. Request authorization before creating or switching branches unless it is already granted in the current request.
+- Prefer the current local checkout for ordinary sequential tasks and do not create worktrees automatically. If parallel execution would help, first propose the agents, worktree layout, integration strategy, and risks, then wait for explicit approval before creating worktrees or starting parallel execution.
+- Assess whether existing changes belong to the current task before proceeding, and preserve unrelated changes. Never reset, clean, stash, discard, overwrite, or delete user work without explicit authorization. Never force-remove a worktree or delete one containing unpreserved work.
+- Avoid unnecessary Git operations and repeated approvals. Once an execution plan is approved, proceed with its authorized routine steps without asking again for each one. Report blockers clearly and request a decision only when necessary.
+- Before committing, verify the staged file list and intended diff.
 
 ## GitHub delivery
 
+- Do not commit, push, create or modify pull requests, merge, or deploy unless explicitly authorized. Authorization for one operation does not imply authorization for unrelated operations.
+- Never merge into `main` or deploy without explicit approval.
 - Keep pull requests focused and describe their scope, validation and known limitations.
 - Request review when the change warrants it, especially for security, data, dependency or API-contract changes.
-- Do not create branches, push, merge or modify pull requests unless requested.
