@@ -20,15 +20,26 @@
 
 - The profiles in `.codex/agents/` provide specialized backend, frontend and review guidance only when those agents are explicitly delegated work.
 - Ordinary tasks do not require multi-agent orchestration, worktrees or pull requests.
+- The Planner creates `docs/plans/issue-XX/plan.md` (or a stable descriptive task identifier when no issue number exists) before implementation begins.
+- The orchestrator verifies the plan, coordinates execution, updates progress tracking and requests Planner revisions for significant scope or architectural changes.
+- Specialist agents may modify assigned application code and tests without repeated permission requests within the approved task scope.
+- Specialists may correct relevant PHPStan, PHP-CS-Fixer, PHPUnit, ESLint, Vitest and build failures autonomously when those corrections remain in scope.
+- Multiple correction and validation cycles are allowed within the approved task scope.
+- Avoid unnecessary delegation and micro-prompts; keep independent final review proportional to risk.
 
 ## Git workflow
 
-- Before development tasks, perform and report a Git preflight covering the current branch, upstream, working tree and untracked files, unfinished Git operations, unpublished commits, remote divergence when verifiable, and registered worktrees. Treat detached HEAD as a condition to assess, not automatically as an error; it can be normal in a Codex-managed worktree. Keep the report concise when everything is normal, report remote verification limitations, and stop only for a genuine risk or blocker.
-- Never implement changes directly on `main`; use a dedicated feature or fix branch. Request authorization before creating or switching branches unless it is already granted in the current request.
-- Prefer the current local checkout for ordinary sequential tasks and do not create worktrees automatically. If parallel execution would help, first propose the agents, worktree layout, integration strategy, and risks, then wait for explicit approval before creating worktrees or starting parallel execution.
-- Assess whether existing changes belong to the current task before proceeding, and preserve unrelated changes. Never reset, clean, stash, discard, overwrite, or delete user work without explicit authorization. Never force-remove a worktree or delete one containing unpreserved work.
-- Avoid unnecessary Git operations and repeated approvals. Once an execution plan is approved, proceed with its authorized routine steps without asking again for each one. Report blockers clearly and request a decision only when necessary.
-- Before committing, verify the staged file list and intended diff.
+- Before implementing a feature, bug fix or refactoring, inspect the current branch and Git working tree.
+- Before creating a new feature branch, perform Git preflight, run `git fetch origin`, and verify that local `main` is synchronized with `origin/main`.
+- If local `main` is behind `origin/main`, update it with fast-forward only when safe, then create the feature branch from the updated `main`.
+- If branches have diverged or local changes could be affected, stop and report the blocker. Never use automatic rebase, reset, force-push or other destructive operations to resolve divergence.
+- If the current task's feature branch already exists, do not recreate it or automatically change its base. Report its relationship to `origin/main` and request authorization before any corrective history operation.
+- Work on a dedicated feature or fix branch, never directly on `main`. If a task starts on `main`, stop and request authorization to create or switch to a dedicated branch.
+- Creating or switching branches requires explicit user authorization unless it is granted in the current request.
+- Never reset, stash, discard or overwrite existing user changes without explicit permission; preserve unrelated files and changes.
+- Never commit, push, merge or delete branches without explicit authorization.
+- Use Git worktrees when parallel tasks require isolated working directories.
+- Before committing, verify that only the intended files are staged.
 
 ## GitHub delivery
 
