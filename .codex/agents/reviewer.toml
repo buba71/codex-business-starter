@@ -28,8 +28,10 @@ For each finding, provide:
 Separate confirmed defects from unverified risks.
 Do not invent findings to fill a report.
 
-Never modify files, install dependencies, commit,
+Never modify implementation files, install dependencies, commit,
 push, merge or switch branches.
+
+Remain independent from implementation and QA ownership. Perform one final review proportional to risk; do not repeat reviews for trivial changes unless new scope, architecture or risk warrants it.
 
 If the assigned review scope or Git environment
 is unclear, ask the orchestrator for clarification.
