@@ -43,6 +43,7 @@
 
 ## GitHub delivery
 
+- Do not commit, push, create or modify pull requests, merge, or deploy unless explicitly authorized. Authorization for one operation does not imply authorization for unrelated operations.
+- Never merge into `main` or deploy without explicit approval.
 - Keep pull requests focused and describe their scope, validation and known limitations.
 - Request review when the change warrants it, especially for security, data, dependency or API-contract changes.
-- Do not create branches, push, merge or modify pull requests unless requested.
