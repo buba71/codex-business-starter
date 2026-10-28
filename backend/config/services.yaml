@@ -7,6 +7,34 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
+    app.brand:
+        name: 'Business Starter'
+        # Set this to a repository/deployment-owned local asset path when a logo is supplied.
+        logo: ''
+        logoAlt: 'Business Starter logo'
+        palette:
+            light:
+                primary: '#1d4ed8'
+                primaryContrast: '#ffffff'
+                accent: '#dbeafe'
+                surface: '#ffffff'
+                surfaceRaised: '#ffffff'
+                text: '#172033'
+                textMuted: '#4b5563'
+                border: '#d1d5db'
+                danger: '#b91c1c'
+                success: '#047857'
+            dark:
+                primary: '#93c5fd'
+                primaryContrast: '#111827'
+                accent: '#1e3a8a'
+                surface: '#111827'
+                surfaceRaised: '#1f2937'
+                text: '#f9fafb'
+                textMuted: '#d1d5db'
+                border: '#4b5563'
+                danger: '#fca5a5'
+                success: '#6ee7b7'
 
 services:
     # default configuration for services in *this* file
