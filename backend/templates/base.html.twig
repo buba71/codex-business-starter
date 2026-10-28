@@ -2,11 +2,45 @@
 <html>
     <head>
         <meta charset="UTF-8">
-        <title>{% block title %}Welcome!{% endblock %}</title>
-        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>{% block title %}{{ app_brand.name }}{% endblock %} · {{ app_brand.name }}</title>
+        {% if app_brand.logo %}
+            <link rel="icon" href="{{ app_brand.logo }}">
+        {% endif %}
         {% block stylesheets %}
             {{ reprise_entry_link_tags('app') }}
         {% endblock %}
+
+        {% set brand_tokens = {
+            primary: '--color-primary',
+            primaryContrast: '--color-primary-contrast',
+            accent: '--color-accent',
+            surface: '--color-surface',
+            surfaceRaised: '--color-surface-raised',
+            text: '--color-text',
+            textMuted: '--color-text-muted',
+            border: '--color-border',
+            danger: '--color-danger',
+            success: '--color-success'
+        } %}
+        {% set light_palette = app_brand.palette.light|default({}) %}
+        {% set dark_palette = app_brand.palette.dark|default({}) %}
+        <style id="app-brand-tokens">
+            :root {
+                {% for token, variable in brand_tokens %}
+                    {% if light_palette[token] is defined and light_palette[token] matches '/^#[0-9a-fA-F]{3,8}$/' %}
+                        {{ variable }}: {{ light_palette[token]|e('html') }};
+                    {% endif %}
+                {% endfor %}
+            }
+            [data-theme="dark"] {
+                {% for token, variable in brand_tokens %}
+                    {% if dark_palette[token] is defined and dark_palette[token] matches '/^#[0-9a-fA-F]{3,8}$/' %}
+                        {{ variable }}: {{ dark_palette[token]|e('html') }};
+                    {% endif %}
+                {% endfor %}
+            }
+        </style>
 
         {% block javascripts %}
             {{ reprise_entry_script_tags('app') }}
@@ -20,6 +54,7 @@
         {% endif %}
     </head>
     <body>
+        <a class="skip-link" href="#main-content">Skip to main content</a>
         {% block body %}{% endblock %}
     </body>
 </html>
