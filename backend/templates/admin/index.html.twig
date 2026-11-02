@@ -3,13 +3,28 @@
 {% block title %}Administration{% endblock %}
 
 {% block body %}
-    <main>
-        <h1>Administration</h1>
-        <p>Signed in as {{ app.user.userIdentifier }}.</p>
+    {% set logout = {
+        action: path('app_logout'),
+        csrfToken: csrf_token('logout')
+    } %}
 
-        <form method="post" action="{{ path('app_logout') }}">
-            <input type="hidden" name="_csrf_token" value="{{ csrf_token('logout') }}">
-            <button type="submit">Sign out</button>
-        </form>
-    </main>
+    <div
+        id="admin-shell"
+        {{ vue_component('AdminShell', {
+            brand: app_brand,
+            logoutUrl: logout.action,
+            logoutCsrfToken: logout.csrfToken
+        }) }}
+    ></div>
+
+    <noscript>
+        <main>
+            <h1>Administration</h1>
+
+            <form method="post" action="{{ logout.action }}">
+                <input type="hidden" name="_csrf_token" value="{{ logout.csrfToken }}">
+                <button type="submit">Sign out</button>
+            </form>
+        </main>
+    </noscript>
 {% endblock %}

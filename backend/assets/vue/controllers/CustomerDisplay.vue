@@ -1,6 +1,8 @@
 <script setup>
 import { onMounted, ref } from 'vue';
 import { get, NetworkError } from '../http/client.js';
+import UiError from '../ui/UiError.vue';
+import UiLoading from '../ui/UiLoading.vue';
 
 const props = defineProps({
     id: {
@@ -46,22 +48,27 @@ onMounted(loadCustomer);
 </script>
 
 <template>
-    <p v-if="loading">Loading customer...</p>
-    <template v-else-if="error">
-        <p role="alert">{{ error }}</p>
-        <button v-if="retryable" type="button" @click="loadCustomer">Retry</button>
-    </template>
-    <dl v-else-if="customer">
-        <dt>Id</dt>
-        <dd>{{ customer.id }}</dd>
+  <UiLoading v-if="loading">
+    Loading customer...
+  </UiLoading>
+  <UiError
+    v-else-if="error"
+    :retryable="retryable"
+    @retry="loadCustomer"
+  >
+    {{ error }}
+  </UiError>
+  <dl v-else-if="customer">
+    <dt>Id</dt>
+    <dd>{{ customer.id }}</dd>
 
-        <dt>Name</dt>
-        <dd>{{ customer.name }}</dd>
+    <dt>Name</dt>
+    <dd>{{ customer.name }}</dd>
 
-        <dt>Email</dt>
-        <dd>{{ customer.email }}</dd>
+    <dt>Email</dt>
+    <dd>{{ customer.email }}</dd>
 
-        <dt>Status</dt>
-        <dd>{{ customer.status }}</dd>
-    </dl>
+    <dt>Status</dt>
+    <dd>{{ customer.status }}</dd>
+  </dl>
 </template>

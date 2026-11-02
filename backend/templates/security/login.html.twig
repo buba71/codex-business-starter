@@ -3,23 +3,35 @@
 {% block title %}Administrator sign in{% endblock %}
 
 {% block body %}
-    <main>
-        <h1>Administrator sign in</h1>
+    <main id="main-content" class="auth-layout">
+        <section class="auth-card" aria-labelledby="login-heading">
+            <header>
+                {% if app_brand.logo %}
+                    <img src="{{ app_brand.logo }}" alt="{{ app_brand.logoAlt }}">
+                {% endif %}
+                <p>{{ app_brand.name }}</p>
+                <h1 id="login-heading">Administrator sign in</h1>
+            </header>
 
-        {% if error %}
-            <p role="alert">{{ error.messageKey }}</p>
-        {% endif %}
+            {% if error %}
+                <p id="login-error" role="alert">{{ error.messageKey }}</p>
+            {% endif %}
 
-        <form method="post" action="{{ path('app_login') }}">
-            <label for="email">Email</label>
-            <input id="email" name="_username" type="email" value="{{ last_username }}" autocomplete="email" required autofocus>
+            <form method="post" action="{{ path('app_login') }}">
+                <div class="field">
+                    <label for="email">Email</label>
+                    <input id="email" name="_username" type="email" value="{{ last_username }}" autocomplete="email" required autofocus{% if error %} aria-describedby="login-error" aria-invalid="true"{% endif %}>
+                </div>
 
-            <label for="password">Password</label>
-            <input id="password" name="_password" type="password" autocomplete="current-password" required>
+                <div class="field">
+                    <label for="password">Password</label>
+                    <input id="password" name="_password" type="password" autocomplete="current-password" required{% if error %} aria-describedby="login-error" aria-invalid="true"{% endif %}>
+                </div>
 
-            <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
 
-            <button type="submit">Sign in</button>
-        </form>
+                <button type="submit">Sign in</button>
+            </form>
+        </section>
     </main>
 {% endblock %}

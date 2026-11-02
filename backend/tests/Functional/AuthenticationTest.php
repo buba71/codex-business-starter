@@ -42,6 +42,13 @@ final class AuthenticationTest extends WebTestCase
         $crawler = $this->client->followRedirect();
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains('h1', 'Administration');
+        self::assertSelectorExists('#admin-shell[data-symfony--ux-vue--vue-component-value="AdminShell"]');
+
+        $bootstrap = $crawler->filter('#admin-shell')->attr('data-symfony--ux-vue--vue-props-value');
+        self::assertIsString($bootstrap);
+        self::assertStringContainsString('Business Starter', $bootstrap);
+        self::assertStringContainsString('/logout', $bootstrap);
+        self::assertStringNotContainsString('admin@example.com', $bootstrap);
 
         $this->client->submit($crawler->selectButton('Sign out')->form());
         self::assertResponseRedirects('/login');
