@@ -11,37 +11,6 @@
             {{ reprise_entry_link_tags('app') }}
         {% endblock %}
 
-        {% set brand_tokens = {
-            primary: '--color-primary',
-            primaryContrast: '--color-primary-contrast',
-            accent: '--color-accent',
-            surface: '--color-surface',
-            surfaceRaised: '--color-surface-raised',
-            text: '--color-text',
-            textMuted: '--color-text-muted',
-            border: '--color-border',
-            danger: '--color-danger',
-            success: '--color-success'
-        } %}
-        {% set light_palette = app_brand.palette.light|default({}) %}
-        {% set dark_palette = app_brand.palette.dark|default({}) %}
-        <style id="app-brand-tokens">
-            :root {
-                {% for token, variable in brand_tokens %}
-                    {% if light_palette[token] is defined and light_palette[token] matches '/^#[0-9a-fA-F]{3,8}$/' %}
-                        {{ variable }}: {{ light_palette[token]|e('html') }};
-                    {% endif %}
-                {% endfor %}
-            }
-            [data-theme="dark"] {
-                {% for token, variable in brand_tokens %}
-                    {% if dark_palette[token] is defined and dark_palette[token] matches '/^#[0-9a-fA-F]{3,8}$/' %}
-                        {{ variable }}: {{ dark_palette[token]|e('html') }};
-                    {% endif %}
-                {% endfor %}
-            }
-        </style>
-
         {% block javascripts %}
             {{ reprise_entry_script_tags('app') }}
         {% endblock %}

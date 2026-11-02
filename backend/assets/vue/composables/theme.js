@@ -12,11 +12,19 @@ function validPreference(value) {
 }
 
 function readPreference(storage = globalThis.localStorage) {
-    try { return validPreference(storage?.getItem(THEME_STORAGE_KEY)); } catch { return 'system'; }
+    try {
+        return validPreference(storage?.getItem(THEME_STORAGE_KEY));
+    } catch {
+        return 'system';
+    }
 }
 
 function systemTheme() {
-    try { return globalThis.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'; } catch { return 'light'; }
+    try {
+        return globalThis.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    } catch {
+        return 'light';
+    }
 }
 
 export function applyTheme(preference) {
@@ -53,7 +61,9 @@ export function useTheme() {
 
     function setPreference(value) {
         preference.value = validPreference(value);
-        try { globalThis.localStorage?.setItem(THEME_STORAGE_KEY, preference.value); } catch { /* blocked storage is non-fatal */ }
+        try {
+            globalThis.localStorage?.setItem(THEME_STORAGE_KEY, preference.value);
+        } catch { /* blocked storage is non-fatal */ }
         updateTheme();
     }
 

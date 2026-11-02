@@ -9,9 +9,12 @@ afterEach(() => {
 });
 
 describe('AdminShell', () => {
-    it('renders trusted branding, logout contract and navigation', () => {
-        const wrapper = mount(AdminShell, { props: { brand: { name: 'Acme', logoAlt: 'Acme logo' }, logoutUrl: '/logout', logoutCsrfToken: 'token', navigation: [{ label: 'Customers', href: '/customers' }] } });
+    it('renders metadata, logout contract and navigation', () => {
+        const wrapper = mount(AdminShell, { props: { brand: { name: 'Acme', logo: '/logo.svg', logoAlt: 'Acme logo' }, logoutUrl: '/logout', logoutCsrfToken: 'token', navigation: [{ label: 'Customers', href: '/customers' }] } });
         expect(wrapper.text()).toContain('Acme');
+        expect(wrapper.get('.admin-brand img').attributes('src')).toBe('/logo.svg');
+        expect(wrapper.get('.admin-brand img').attributes('alt')).toBe('Acme logo');
+        expect(document.querySelector('#app-brand-tokens')).toBeNull();
         expect(wrapper.get('form').attributes('action')).toBe('/logout');
         expect(wrapper.get('input[name="_csrf_token"]').attributes('value')).toBe('token');
         expect(wrapper.get('nav').text()).toContain('Customers');

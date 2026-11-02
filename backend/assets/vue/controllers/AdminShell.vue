@@ -1,19 +1,21 @@
 <script setup>
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
-import { applyBrandTokens, bootstrapBrandConfig, resolveBrandConfig } from '../config/brand.js';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
 import { useTheme } from '../composables/theme.js';
 import UiButton from '../ui/UiButton.vue';
 
 const props = defineProps({
     brand: { type: Object, default: null },
-    config: { type: Object, default: null },
     logoutUrl: { type: String, default: '' },
     logoutCsrfToken: { type: String, default: '' },
     navigation: { type: Array, default: () => [] },
     userName: { type: String, default: '' },
     title: { type: String, default: 'Administration' },
 });
-const brand = computed(() => resolveBrandConfig(props.brand || props.config || bootstrapBrandConfig()));
+const brand = computed(() => ({
+    name: props.brand?.name || 'Business Starter',
+    logo: props.brand?.logo || '',
+    logoAlt: props.brand?.logoAlt || 'Business Starter logo',
+}));
 const navigation = computed(() => props.navigation.length ? props.navigation : [{ label: 'Overview', href: '/admin' }]);
 const menuOpen = ref(false);
 const isMobile = ref(globalThis.matchMedia?.('(max-width: 48rem)')?.matches ?? false);
@@ -23,7 +25,6 @@ const { preference, setPreference } = useTheme();
 const themeLabel = computed(() => preference.value === 'system' ? 'System theme' : `Use ${preference.value} theme`);
 const drawerHidden = computed(() => isMobile.value && !menuOpen.value);
 let mobileMediaQuery;
-watch(brand, applyBrandTokens, { immediate: true });
 
 function focusMenuToggle() {
     nextTick(() => menuToggle.value?.focus());

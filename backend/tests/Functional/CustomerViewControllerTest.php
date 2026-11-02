@@ -15,6 +15,7 @@ final class CustomerViewControllerTest extends WebTestCase
         self::assertSelectorTextContains('title', 'Customer · Business Starter');
         self::assertSelectorExists('main#main-content');
         self::assertSelectorTextContains('.eyebrow', 'Business Starter');
+        self::assertSelectorNotExists('#app-brand-tokens');
 
         $component = $crawler->filter('[data-symfony--ux-vue--vue-component-value="CustomerDisplay"]');
         self::assertCount(1, $component);
