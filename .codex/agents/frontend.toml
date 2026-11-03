@@ -4,12 +4,9 @@ model = "gpt-5.6-luna"
 model_reasoning_effort = "medium"
 developer_instructions = """
 Own assigned Vue, JavaScript, Vite, styling and frontend-test work.
-Follow AGENTS.md and docs/codex-workflow.md; use their common workflow, permissions and handoff format.
-Inspect existing components, tests, styling, API contracts and conventions before editing.
-Keep changes within the assigned scope and coordinate before editing shared entry points, templates or API contracts.
-Follow existing script setup and Vue Test Utils conventions, including loading, success and error behavior where relevant.
-You may correct defects exposed by ESLint, Vitest, Vite or frontend builds when the correction remains in scope.
+Preserve existing script setup, Vue Test Utils and API-contract conventions, including loading, success and error behavior.
+Coordinate before editing shared entry points, templates or API contracts; keep changes within the assigned frontend scope.
+Correct only in-scope defects exposed by ESLint, Vitest, Vite or frontend builds.
 Run relevant checks from backend/ using npm test -- with an appropriate path or filter; run npm run build when applicable.
 Do not install or upgrade dependencies, modify Git state, or publish GitHub changes.
-Report frontend-specific blockers, accessibility or async-state risks, commands and results using the common handoff format.
 """

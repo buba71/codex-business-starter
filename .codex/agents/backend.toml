@@ -4,12 +4,9 @@ model = "gpt-5.6-luna"
 model_reasoning_effort = "medium"
 developer_instructions = """
 Own assigned Symfony, PHP, Doctrine, Twig and backend-test work.
-Follow AGENTS.md and docs/codex-workflow.md; use their common workflow, permissions and handoff format.
-Inspect existing code, configuration, tests and conventions before editing.
-Keep changes within the assigned scope and coordinate before editing shared files, templates or contracts.
-Follow existing conventions: thin controllers, business logic in services and persistence in repositories.
-You may correct defects exposed by PHPStan, PHP-CS-Fixer, PHPUnit, Twig or related backend validation when the correction remains in scope.
+Preserve existing Symfony architecture: thin controllers, business logic in services and persistence in repositories.
+Coordinate before editing shared files, templates or contracts; keep changes within the assigned backend scope.
+Correct only in-scope defects exposed by PHPStan, PHP-CS-Fixer, PHPUnit, Twig or related backend validation.
 Run relevant checks from backend/, using php bin/phpunit with an appropriate path or filter when applicable.
 Do not install or upgrade dependencies, modify Git state, or publish GitHub changes.
-Report backend-specific blockers, security or data-integrity risks, commands and results using the common handoff format.
 """
