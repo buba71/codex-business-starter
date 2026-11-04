@@ -1,8 +1,8 @@
 # Codex Workflow
 
-This workflow is the repository's concise operating model for Issue-driven work. It uses the existing Planner, Backend, Frontend, QA and Reviewer profiles; it does not require another agent, orchestrator, worktree or automation mechanism.
+This workflow is the repository's concise operating model for Issue-driven work. It uses the configured Planner, Product Analyst, Software Architect, Backend, Frontend, QA and Reviewer profiles; it does not require another agent, orchestrator, worktree or automation mechanism.
 
-The future capability boundaries are documented in [`docs/codex-agent-roadmap.md`](codex-agent-roadmap.md); that roadmap does not create or activate additional profiles.
+The deferred capability boundaries are documented in [`docs/codex-agent-roadmap.md`](codex-agent-roadmap.md); that roadmap does not create or activate additional profiles.
 
 ## Complexity levels
 
@@ -21,16 +21,20 @@ Before choosing a gate sequence, classify the request as a new product, a recove
 Use the minimum capability that covers the work:
 
 - Codex may work directly on clear, low-risk Simple tasks.
+- Product Analyst is activated for a new product when objectives, users, business needs, functional scope, MVP boundaries or acceptance criteria require clarification.
 - Planner is activated when requirements, ownership, dependencies or acceptance criteria need clarification, and for Standard or Complex work.
+- Software Architect is activated for recovery of an existing system when architecture or risks require deeper analysis, or for an evolution that crosses boundaries, changes a contract, introduces a major dependency or requires a material technical decision.
 - Backend and Frontend are activated only for their respective implementation surfaces.
 - QA is activated when several acceptance criteria, layers, regressions or sensitive behavior require evidence.
 - Reviewer is activated for API, security, data, dependency, architecture or other risk that merits independent review.
 
 Sequence agents by default. Parallel execution or worktrees require explicit human approval and genuinely independent scopes. Do not activate an agent solely to obtain a redundant status report.
 
-Product Analyst, Software Architect and DevOps Engineer are future capabilities, not additional profiles. Until a separate need is demonstrated, the session owner, Planner, Backend, Frontend, QA and Reviewer cover those concerns according to the matrix in `AGENTS.md`.
+For a new product, Product Analyst precedes Planner when clarification is needed. For recovery of an existing system, Software Architect may precede planning when architecture or risk analysis is needed. For a major technical decision during an evolution, Software Architect proposes the decision and its consequences; Planner organizes approved work, while Reviewer checks conformance. A simple correction does not activate either profile systematically.
 
 Use an ADR only when a decision materially structures architecture, contracts or long-term operations. Do not create one for ordinary implementation choices.
+
+Software Architect writes new ADRs under `docs/architecture/adr/` with status `Proposed` and sections for context, options, proposed decision and consequences. The architect never accepts an ADR alone. An ADR becomes `Accepted` only after explicit user validation; an accepted decision is not silently edited, and a replacement decision requires a new ADR.
 
 ## Gates
 
@@ -49,9 +53,9 @@ Stop and report a blocker when local work, branch divergence, missing authority 
 
 For Simple work, record a concise mini-plan in the active session: outcome, scope, validation and risks. Do not create a plan file solely to satisfy the gate.
 
-For Standard or Complex work, the Planner creates or updates `docs/plans/issue-XX/plan.md`, or a stable descriptive directory when no Issue number exists. The plan keeps the eight standard sections and identifies scope, acceptance criteria, ownership, dependencies, validation, risks and progress.
+For Standard or Complex work, a versioned plan under `docs/plans/` must exist before G2 begins. The Planner creates or updates `docs/plans/issue-XX/plan.md`, or a stable descriptive directory when no Issue number exists. The plan keeps the eight standard sections and identifies scope, acceptance criteria, ownership, dependencies, validation, risks and progress. The plan must not be created retroactively during or after implementation.
 
-The session owner verifies the applicable plan before implementation and requests a revision when scope, architecture, ownership or acceptance criteria are materially unclear.
+Before G2, Codex principal communicates the plan path in the active session together with a concise summary of scope, responsibilities, validation and risks. This communication is a coordination handoff, not an approval request, unless a decision explicitly requires human arbitration. If delegation is prohibited, Codex principal may perform the Planner responsibilities directly and must record that ownership in the plan. The session owner verifies the applicable plan before implementation and requests a revision when scope, architecture, ownership or acceptance criteria are materially unclear.
 
 ### G2 — Implementation
 

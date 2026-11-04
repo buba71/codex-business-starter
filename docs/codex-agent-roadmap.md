@@ -5,7 +5,7 @@ This document describes the possible evolution of the repository's Codex capabil
 ## Operating principles
 
 - Select the smallest set of capabilities that materially improves the result.
-- Keep the current five-agent model as the default operating baseline.
+- Keep the seven configured-agent model as the default operating baseline, selecting only the minimum useful capabilities.
 - Delegate only a bounded responsibility with an explicit handoff and validation outcome.
 - Run agents sequentially by default. Parallel execution and worktrees require prior human approval and independent scopes.
 - Do not grant infrastructure, deployment, data or external-system authority implicitly.
@@ -14,32 +14,34 @@ This document describes the possible evolution of the repository's Codex capabil
 
 ## Capability levels
 
-### Current foundation
+### Operational agents
 
 | Agent | Primary boundary |
 | --- | --- |
 | Planner | Requirements, scope, acceptance criteria, ownership, dependencies and implementation plan |
+| Product Analyst | Product goals, users, functional scope, user stories and verifiable acceptance criteria |
+| Software Architect | Architecture analysis, technical options, contracts, risks and proposed ADRs |
 | Backend Engineer | Symfony, PHP, Doctrine, Twig and backend tests |
 | Frontend Engineer | Vue, JavaScript, Vite, styling and frontend tests |
 | QA Engineer | Acceptance evidence, regression checks, test diagnosis and CI verification |
 | Reviewer | Independent correctness, security, regression and test-coverage review |
 
-These profiles remain the only configured specialized agents. Their permissions and restrictions are defined in `.codex/agents/` and `AGENTS.md`.
+These seven profiles are the configured specialized agents. Their permissions and restrictions are defined in `.codex/agents/` and `AGENTS.md`.
 
-### Envisaged extension
+### Operational capability boundaries
 
-The following capabilities may become useful when recurring work demonstrates a stable, separate responsibility. They must not be created merely to rename existing duties.
+The following sections define the boundaries of the two newly operational profiles. They must not be used to rename existing duties or create an automatic workflow stage.
 
 #### Product Analyst
 
 - Mission: turn an ambiguous product request into a shared problem statement and measurable outcome.
-- Activate when: user needs, business rules, actors, success metrics or acceptance criteria are unclear; especially for a new product or major product evolution.
+- Activate when: user needs, business rules, actors, success metrics or acceptance criteria are unclear; especially for a new product or major product evolution requiring clarification.
 - Deliverables: problem statement, personas or actors, prioritized outcomes, scope boundaries, assumptions and acceptance criteria.
 - Read: issue or request, existing product behavior, domain documentation, analytics or research provided by the user.
-- Write: only an assigned product-analysis artifact or approved planning document; never application code or external product data.
+- Write: only an assigned product-analysis artifact or functional document; never application code or external product data.
 - Interactions: supplies clarified inputs to Planner; coordinates with Codex principal and Reviewer on scope and risk.
 - Explicit exclusions: no technical decomposition, architecture choice, implementation, UX delivery or release decision.
-- Creation condition: repeated product-discovery work cannot be handled efficiently by Codex principal and Planner without a distinct analysis handoff.
+- Approval boundary: Product Analyst does not decide architecture, implement code or alter validated requirements without authorization.
 
 #### Software Architect
 
@@ -50,7 +52,7 @@ The following capabilities may become useful when recurring work demonstrates a 
 - Write: only an assigned ADR or architecture artifact; no application implementation, migration or deployment.
 - Interactions: advises Planner on decomposition, Backend/Frontend on contracts and Reviewer on design conformance.
 - Explicit exclusions: no ownership of requirements, coding, test execution, release approval or infrastructure changes.
-- Creation condition: recurring architecture decisions exceed the safe review capacity of Planner, Codex principal and Reviewer.
+- Approval boundary: Software Architect proposes but does not accept structurally significant ADRs; implementation remains with Backend/Frontend after approved planning.
 
 #### DevOps Engineer
 
@@ -122,8 +124,8 @@ Security Engineer, Database Engineer and UX/UI Designer remain capability bounda
 
 | Request type | Typical capabilities | Additional trigger |
 | --- | --- | --- |
-| New product | Codex principal, Planner; Product Analyst or Software Architect only if needed | Security, data, UX or operations risks trigger the relevant deferred capability for analysis, not automatic implementation |
-| Recovery of existing system | Planner, relevant specialist, QA, Reviewer | Database, security or operational risk requires the corresponding future capability when recurring and bounded |
-| Evolution or correction | Codex principal or one relevant specialist | Add Planner, QA or Reviewer only for ambiguity, cross-layer impact or material risk |
+| New product | Codex principal, Product Analyst when clarification is needed, then Planner | Software Architect joins only for material architecture; security, data, UX or operations risks trigger the relevant deferred capability for analysis |
+| Recovery of existing system | Software Architect when architecture or risks need deeper analysis, then Planner, relevant specialist, QA and Reviewer | Database, security or operational risk requires the corresponding future capability when recurring and bounded |
+| Evolution or correction | Codex principal or one relevant specialist | Software Architect joins for a major technical decision; simple corrections do not activate Product Analyst or Software Architect systematically |
 
 The workflow's Simple, Standard and Complex levels remain authoritative for planning, validation and human approval. This roadmap does not create a new hierarchy, permission model or automatic orchestration mechanism.
