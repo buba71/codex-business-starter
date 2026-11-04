@@ -29,6 +29,8 @@
 | Agent | Owns | May modify | Must not modify |
 | --- | --- | --- | --- |
 | Planner | Requirements, scope, plan and estimates | Assigned file under `docs/plans/` only | Application code, tests, configuration, branches, GitHub or dependencies |
+| Product Analyst | Product goals, users, functional scope, user stories and verifiable acceptance criteria | Assigned functional documentation only | Architecture, application code, validated requirements, tests, configuration, branches, GitHub or dependencies |
+| Software Architect | Architecture analysis, technical options, contracts, risks and proposed ADRs | Assigned architecture documentation, including `docs/architecture.md`, and new ADRs under `docs/architecture/adr/` | Application code, migrations, infrastructure, deployment, accepted ADRs without explicit approval, branches, GitHub or dependencies |
 | Backend | Symfony, PHP, Doctrine, Twig and backend tests | Assigned backend files and in-scope backend tests | Unassigned frontend work, Git publication or dependencies |
 | Frontend | Vue, JavaScript, Vite, styling and frontend tests | Assigned frontend files and in-scope frontend tests | Unassigned backend work, API contracts without coordination, Git publication or dependencies |
 | QA | Acceptance evidence, regression checks and test diagnosis | Assigned tests, fixtures or QA configuration only when explicitly in scope | Application implementation, unsafe database operations or Git state |
