@@ -21,8 +21,8 @@ This document describes the possible evolution of the repository's Codex capabil
 | Planner | Requirements, scope, acceptance criteria, ownership, dependencies and implementation plan |
 | Product Analyst | Product goals, users, functional scope, user stories and verifiable acceptance criteria |
 | Software Architect | Architecture analysis, technical options, contracts, risks and proposed ADRs |
-| Backend Engineer | Symfony, PHP, Doctrine, Twig and backend tests |
-| Frontend Engineer | Vue, JavaScript, Vite, styling and frontend tests |
+| Backend Engineer | Assigned server-side/application implementation surface and related tests |
+| Frontend Engineer | Assigned client-side/presentation implementation surface and related tests |
 | QA Engineer | Acceptance evidence, regression checks, test diagnosis and CI verification |
 | Reviewer | Independent correctness, security, regression and test-coverage review |
 
