@@ -67,6 +67,20 @@ final class AuthenticationTest extends WebTestCase
         self::assertResponseStatusCodeSame(403);
     }
 
+    public function testAdminCanVisitCustomerStatusPage(): void
+    {
+        $admin = $this->createUser('customer-admin@example.com', 'a-secure-password', [User::ROLE_ADMIN]);
+        $this->client->loginUser($admin);
+
+        $crawler = $this->client->request('GET', '/admin/customers/42');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('h1', 'Customer administration');
+        $component = $crawler->filter('[data-symfony--ux-vue--vue-component-value="CustomerStatusAdmin"]');
+        self::assertCount(1, $component);
+        self::assertSame('{"id":42}', $component->attr('data-symfony--ux-vue--vue-props-value'));
+    }
+
     public function testDisabledAdminCannotLogin(): void
     {
         $this->createUser('disabled@example.com', 'a-secure-password', [User::ROLE_ADMIN], false);

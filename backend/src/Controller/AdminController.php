@@ -13,4 +13,12 @@ final class AdminController extends AbstractController
     {
         return $this->render('admin/index.html.twig');
     }
+
+    #[Route('/admin/customers/{id}', name: 'admin_customer_status', methods: ['GET'])]
+    public function customer(int $id): Response
+    {
+        return $this->render('admin/customer.html.twig', [
+            'id' => $id,
+        ]);
+    }
 }

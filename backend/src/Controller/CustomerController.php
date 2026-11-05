@@ -2,9 +2,11 @@
 
 namespace App\Controller;
 
+use App\Entity\Customer;
 use App\Enum\CustomerStatus;
 use App\Service\CustomerCreator;
 use App\Service\CustomerRetriever;
+use App\Service\CustomerStatusUpdater;
 use Symfony\Component\HttpFoundation\Exception\JsonException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -17,6 +19,7 @@ final class CustomerController
     public function __construct(
         private CustomerCreator $customerCreator,
         private CustomerRetriever $customerRetriever,
+        private CustomerStatusUpdater $customerStatusUpdater,
         private CsrfTokenManagerInterface $csrfTokenManager,
     ) {
     }
@@ -99,12 +102,60 @@ final class CustomerController
             );
         }
 
-        return new JsonResponse([
+        return new JsonResponse($this->customerRepresentation($customer));
+    }
+
+    #[Route('/api/v1/customers/{id}', name: 'customer_update_status', methods: ['PATCH'])]
+    public function updateStatus(Request $request, int $id): JsonResponse
+    {
+        try {
+            $data = $request->toArray();
+        } catch (JsonException) {
+            return $this->errorResponse(
+                'invalid_json',
+                'Request body must contain valid JSON.',
+                JsonResponse::HTTP_BAD_REQUEST,
+            );
+        }
+
+        if (!array_key_exists('status', $data) || !is_string($data['status'])) {
+            return $this->errorResponse(
+                'invalid_input',
+                'The status field is required and must be a string.',
+                JsonResponse::HTTP_BAD_REQUEST,
+            );
+        }
+
+        $status = CustomerStatus::tryFrom($data['status']);
+        if (null === $status) {
+            return $this->errorResponse(
+                'invalid_input',
+                'The status field contains an unsupported value.',
+                JsonResponse::HTTP_BAD_REQUEST,
+            );
+        }
+
+        $customer = $this->customerStatusUpdater->update($id, $status);
+        if (null === $customer) {
+            return $this->errorResponse(
+                'customer_not_found',
+                'Customer not found.',
+                JsonResponse::HTTP_NOT_FOUND,
+            );
+        }
+
+        return new JsonResponse($this->customerRepresentation($customer));
+    }
+
+    /** @return array{id: int|null, name: string, email: string, status: string} */
+    private function customerRepresentation(Customer $customer): array
+    {
+        return [
             'id' => $customer->getId(),
             'name' => $customer->getName(),
             'email' => $customer->getEmail(),
             'status' => $customer->getStatus()->value,
-        ]);
+        ];
     }
 
     /** @param list<array{field: string, message: string}> $details */
