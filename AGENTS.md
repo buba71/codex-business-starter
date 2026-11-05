@@ -1,9 +1,16 @@
 # Project Instructions
 
-## Context
+## Project adapter
 
-- The application uses Symfony 7.4, PHP, Doctrine and PostgreSQL in `backend/`.
-- Vue 3 sources and colocated Vitest tests are in `backend/assets/vue/`; PHP tests are in `backend/tests/`.
+This section contains repository-specific context. The workflow and agent profiles remain stack- and forge-neutral.
+
+- Stack: Symfony 7.4 and PHP with Doctrine/PostgreSQL in `backend/`; Vue 3, Vite and Vitest are also under `backend/`.
+- Architecture: Symfony controllers handle HTTP, services own business logic, repositories own persistence, and Vue presents frontend state through the existing Symfony UX integration.
+- Paths: Vue sources and colocated tests are in `backend/assets/vue/`; PHP tests are in `backend/tests/`.
+- Validation: run `php bin/phpunit`, `vendor/bin/phpstan analyse`, `vendor/bin/php-cs-fixer check --diff --verbose`, `npm test`, `npm run lint` and `npm run build` from `backend/` as applicable. Database-backed tests require the isolated PostgreSQL test environment.
+- CI: GitHub Actions is defined in `.github/workflows/ci.yml`; it runs backend, frontend, security and code-quality jobs.
+- Forge: this repository uses GitHub Issues, Pull Requests and Actions. Equivalent issue, pull/merge-request and CI concepts may be used when this workflow is adapted elsewhere.
+- Special constraints: protect authentication, authorization, user data and secrets; do not run destructive database operations against shared environments.
 - Write code, comments, commits and technical documentation in English.
 
 ## Project rules
@@ -28,13 +35,13 @@
 
 | Agent | Owns | May modify | Must not modify |
 | --- | --- | --- | --- |
-| Planner | Requirements, scope, plan and estimates | Assigned file under `docs/plans/` only | Application code, tests, configuration, branches, GitHub or dependencies |
-| Product Analyst | Product goals, users, functional scope, user stories and verifiable acceptance criteria | Assigned functional documentation only | Architecture, application code, validated requirements, tests, configuration, branches, GitHub or dependencies |
-| Software Architect | Architecture analysis, technical options, contracts, risks and proposed ADRs | Assigned architecture documentation, including `docs/architecture.md`, and new ADRs under `docs/architecture/adr/` | Application code, migrations, infrastructure, deployment, accepted ADRs without explicit approval, branches, GitHub or dependencies |
-| Backend | Symfony, PHP, Doctrine, Twig and backend tests | Assigned backend files and in-scope backend tests | Unassigned frontend work, Git publication or dependencies |
-| Frontend | Vue, JavaScript, Vite, styling and frontend tests | Assigned frontend files and in-scope frontend tests | Unassigned backend work, API contracts without coordination, Git publication or dependencies |
+| Planner | Requirements, scope, plan and estimates | Assigned file under `docs/plans/` only | Application code, tests, configuration, branches, external systems or dependencies |
+| Product Analyst | Product goals, users, functional scope, user stories and verifiable acceptance criteria | Assigned functional documentation only | Architecture, application code, validated requirements, tests, configuration, branches, external systems or dependencies |
+| Software Architect | Architecture analysis, technical options, contracts, risks and proposed ADRs | Assigned architecture documentation, including `docs/architecture.md`, and new ADRs under `docs/architecture/adr/` | Application code, migrations, infrastructure, deployment, accepted ADRs without explicit approval, branches, external systems or dependencies |
+| Backend | Assigned server-side/application implementation surface and related tests | Assigned implementation files and in-scope tests | Unassigned frontend work, contracts without coordination, Git publication or dependencies |
+| Frontend | Assigned client-side/presentation implementation surface and related tests | Assigned implementation files and in-scope tests | Unassigned backend work, contracts without coordination, Git publication or dependencies |
 | QA | Acceptance evidence, regression checks and test diagnosis | Assigned tests, fixtures or QA configuration only when explicitly in scope | Application implementation, unsafe database operations or Git state |
-| Reviewer | Independent correctness, security and regression review | Nothing in implementation scope | Any implementation, test, Git or GitHub modification |
+| Reviewer | Independent correctness, security and regression review | Nothing in implementation scope | Any implementation, test, Git or external-system modification |
 
 Shared files and contracts require coordination before editing. The session owner may narrow an assignment but may not silently expand it.
 
@@ -53,9 +60,17 @@ Shared files and contracts require coordination before editing. The session owne
 
 These Git safeguards apply independently of task complexity.
 
-## GitHub delivery
+## Delivery and external systems
 
-- Do not commit, push, create or modify pull requests, merge, or deploy unless explicitly authorized.
-- Never merge into `main` or deploy without explicit approval.
-- Keep pull requests focused and describe their scope, validation and known limitations.
+- Do not commit, push, create or modify a pull/merge request, merge, or deploy unless explicitly authorized.
+- Never merge into the protected default branch or deploy without explicit approval.
+- Keep delivery requests focused and describe their scope, validation and limitations.
 - Request review when the change warrants it, especially for security, data, dependency or API-contract changes.
+
+## Optional Skills
+
+The repository's `symfony-review` and `vue-review` Skills are optional specializations. Activate them only when the changed surface and review request make them relevant; they are not requirements of the workflow itself.
+
+## Workflow source
+
+The canonical portable workflow is maintained in [codex-workflow](https://github.com/buba71/codex-workflow). Updates are intentional and manual: review and adapt source changes when needed; do not synchronize automatically or overwrite Starter Kit conventions.
