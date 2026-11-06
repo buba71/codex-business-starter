@@ -1,9 +1,9 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
 import { CsrfError, get, NetworkError, patch } from '../http/client.js';
-import UiButton from '../ui/UiButton.vue';
 import UiError from '../ui/UiError.vue';
 import UiLoading from '../ui/UiLoading.vue';
+import UiSwitch from '../ui/UiSwitch.vue';
 
 const props = defineProps({
     id: {
@@ -19,8 +19,11 @@ const loadRetryable = ref(false);
 const actionError = ref(null);
 const actionRetryable = ref(false);
 const submitting = ref(false);
+const pendingStatus = ref(null);
 
-const oppositeStatus = computed(() => customer.value?.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE');
+const switchStatus = computed(() => pendingStatus.value ?? customer.value?.status);
+const switchChecked = computed(() => switchStatus.value === 'ACTIVE');
+const oppositeStatus = computed(() => switchChecked.value ? 'INACTIVE' : 'ACTIVE');
 const actionLabel = computed(() => oppositeStatus.value === 'ACTIVE' ? 'Activate customer' : 'Deactivate customer');
 
 function errorMessage(requestError, action = 'load') {
@@ -69,6 +72,7 @@ async function updateStatus() {
     }
 
     const requestedStatus = oppositeStatus.value;
+    pendingStatus.value = requestedStatus;
     submitting.value = true;
     actionError.value = null;
     actionRetryable.value = false;
@@ -82,7 +86,9 @@ async function updateStatus() {
             body: JSON.stringify({ status: requestedStatus }),
         });
         customer.value = await response.json();
+        pendingStatus.value = null;
     } catch (requestError) {
+        pendingStatus.value = null;
         actionError.value = errorMessage(requestError, 'update');
         actionRetryable.value = canRetry(requestError);
     } finally {
@@ -127,12 +133,11 @@ onMounted(loadCustomer);
       <dd>{{ customer.status }}</dd>
     </dl>
 
-    <UiButton
+    <UiSwitch
+      :model-value="switchChecked"
+      :aria-label="actionLabel"
       :loading="submitting"
-      :disabled="submitting"
-      @click="updateStatus"
-    >
-      {{ actionLabel }}
-    </UiButton>
+      @update:model-value="updateStatus"
+    />
   </div>
 </template>

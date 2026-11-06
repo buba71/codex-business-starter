@@ -1,6 +1,7 @@
 import { flushPromises, mount } from '@vue/test-utils';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import CustomerStatusAdmin from './CustomerStatusAdmin.vue';
+import UiSwitch from '../ui/UiSwitch.vue';
 
 const customer = {
     id: 42,
@@ -35,7 +36,11 @@ describe('CustomerStatusAdmin', () => {
 
         expect(wrapper.text()).toContain('Grace Hopper');
         expect(wrapper.text()).toContain('INACTIVE');
-        expect(wrapper.get('button').text()).toBe('Activate customer');
+        expect(wrapper.findComponent(UiSwitch).exists()).toBe(true);
+        const statusSwitch = wrapper.get('[role="switch"]');
+        expect(statusSwitch.attributes('aria-label')).toBe('Activate customer');
+        expect(statusSwitch.attributes('aria-checked')).toBe('false');
+        expect(statusSwitch.attributes('type')).toBe('checkbox');
         expect(fetchMock).toHaveBeenCalledWith('/api/v1/customers/42', {
             credentials: 'same-origin',
             headers: { Accept: 'application/json' },
@@ -53,7 +58,7 @@ describe('CustomerStatusAdmin', () => {
 
         const wrapper = mount(CustomerStatusAdmin, { props: { id: customer.id } });
         await flushPromises();
-        await wrapper.get('button').trigger('click');
+        await wrapper.get('[role="switch"]').setValue(true);
         await flushPromises();
 
         expect(fetchMock.mock.calls[2][0]).toBe('/api/v1/customers/42');
@@ -64,7 +69,9 @@ describe('CustomerStatusAdmin', () => {
         expect(patchOptions.headers.get('Content-Type')).toBe('application/json');
         expect(patchOptions.headers.get('X-CSRF-Token')).toBe('csrf-token');
         expect(wrapper.text()).toContain('ACTIVE');
-        expect(wrapper.get('button').text()).toBe('Deactivate customer');
+        const statusSwitch = wrapper.get('[role="switch"]');
+        expect(statusSwitch.attributes('aria-label')).toBe('Deactivate customer');
+        expect(statusSwitch.attributes('aria-checked')).toBe('true');
     });
 
     it('prevents duplicate submissions while the PATCH is pending', async () => {
@@ -77,16 +84,21 @@ describe('CustomerStatusAdmin', () => {
 
         const wrapper = mount(CustomerStatusAdmin, { props: { id: customer.id } });
         await flushPromises();
-        const button = wrapper.get('button');
-        await button.trigger('click');
-        await button.trigger('click');
+        const statusSwitch = wrapper.get('[role="switch"]');
+        await statusSwitch.setValue(true);
+        await statusSwitch.setValue(false);
 
         expect(fetchMock).toHaveBeenCalledTimes(3);
-        expect(button.attributes('disabled')).toBeDefined();
+        expect(statusSwitch.attributes('disabled')).toBeDefined();
+        expect(statusSwitch.attributes('aria-busy')).toBe('true');
+        expect(statusSwitch.attributes('aria-checked')).toBe('true');
         expect(wrapper.text()).toContain('INACTIVE');
 
         resolvePatch(response(200, { ...customer, status: 'ACTIVE' }));
         await flushPromises();
+
+        expect(statusSwitch.attributes('disabled')).toBeUndefined();
+        expect(statusSwitch.attributes('aria-checked')).toBe('true');
     });
 
     it('keeps the current status and displays an error when PATCH fails', async () => {
@@ -98,12 +110,14 @@ describe('CustomerStatusAdmin', () => {
 
         const wrapper = mount(CustomerStatusAdmin, { props: { id: customer.id } });
         await flushPromises();
-        await wrapper.get('button').trigger('click');
+        await wrapper.get('[role="switch"]').setValue(true);
         await flushPromises();
 
         expect(wrapper.text()).toContain('INACTIVE');
         expect(wrapper.text()).toContain('Unable to update the customer.');
-        expect(wrapper.findAll('button').find((button) => button.text() === 'Activate customer').text()).toBe('Activate customer');
+        const statusSwitch = wrapper.get('[role="switch"]');
+        expect(statusSwitch.attributes('aria-label')).toBe('Activate customer');
+        expect(statusSwitch.attributes('aria-checked')).toBe('false');
     });
 
     it('keeps the current status when the PATCH is rejected for CSRF', async () => {
@@ -115,7 +129,7 @@ describe('CustomerStatusAdmin', () => {
 
         const wrapper = mount(CustomerStatusAdmin, { props: { id: customer.id } });
         await flushPromises();
-        await wrapper.get('button').trigger('click');
+        await wrapper.get('[role="switch"]').setValue(true);
         await flushPromises();
 
         expect(wrapper.text()).toContain('INACTIVE');

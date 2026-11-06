@@ -102,7 +102,7 @@ final class CustomerController
             );
         }
 
-        return new JsonResponse($this->customerRepresentation($customer));
+        return new JsonResponse($this->customerToArray($customer));
     }
 
     #[Route('/api/v1/customers/{id}', name: 'customer_update_status', methods: ['PATCH'])]
@@ -144,11 +144,11 @@ final class CustomerController
             );
         }
 
-        return new JsonResponse($this->customerRepresentation($customer));
+        return new JsonResponse($this->customerToArray($customer));
     }
 
     /** @return array{id: int|null, name: string, email: string, status: string} */
-    private function customerRepresentation(Customer $customer): array
+    private function customerToArray(Customer $customer): array
     {
         return [
             'id' => $customer->getId(),
