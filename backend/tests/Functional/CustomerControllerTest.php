@@ -54,6 +54,16 @@ final class CustomerControllerTest extends WebTestCase
         self::assertSame('authentication_required', json_decode($client->getResponse()->getContent(), true)['error']['code']);
     }
 
+    public function testAnonymousPatchReturnsUnauthorizedJson(): void
+    {
+        $client = $this->client;
+        $client->restart();
+        $client->jsonRequest('PATCH', '/api/v1/customers/1', ['status' => 'ACTIVE']);
+
+        self::assertResponseStatusCodeSame(401);
+        self::assertSame('authentication_required', json_decode($client->getResponse()->getContent(), true)['error']['code']);
+    }
+
     public function testNonAdminGetReturnsForbiddenJson(): void
     {
         $this->client->loginUser($this->createUser('user@example.com'));
@@ -67,6 +77,15 @@ final class CustomerControllerTest extends WebTestCase
     {
         $this->client->loginUser($this->createUser('user@example.com'));
         $this->client->jsonRequest('POST', '/api/v1/customers', []);
+
+        self::assertResponseStatusCodeSame(403);
+        self::assertSame('access_denied', json_decode($this->client->getResponse()->getContent(), true)['error']['code']);
+    }
+
+    public function testNonAdminPatchReturnsForbiddenJson(): void
+    {
+        $this->client->loginUser($this->createUser('user-patch@example.com'));
+        $this->client->jsonRequest('PATCH', '/api/v1/customers/1', ['status' => 'ACTIVE']);
 
         self::assertResponseStatusCodeSame(403);
         self::assertSame('access_denied', json_decode($this->client->getResponse()->getContent(), true)['error']['code']);
@@ -94,6 +113,30 @@ final class CustomerControllerTest extends WebTestCase
 
         self::assertResponseStatusCodeSame(403);
         self::assertSame('csrf_token_invalid', json_decode($this->client->getResponse()->getContent(), true)['error']['code']);
+    }
+
+    public function testAdminPatchWithoutCsrfTokenDoesNotPersist(): void
+    {
+        $customer = $this->createCustomer(CustomerStatus::INACTIVE);
+
+        $this->client->jsonRequest('PATCH', sprintf('/api/v1/customers/%d', $customer->getId()), ['status' => 'ACTIVE']);
+
+        self::assertResponseStatusCodeSame(403);
+        self::assertSame('csrf_token_invalid', json_decode($this->client->getResponse()->getContent(), true)['error']['code']);
+        $this->entityManager->clear();
+        self::assertSame(CustomerStatus::INACTIVE, $this->entityManager->find(Customer::class, $customer->getId())->getStatus());
+    }
+
+    public function testAdminPatchWithInvalidCsrfTokenDoesNotPersist(): void
+    {
+        $customer = $this->createCustomer(CustomerStatus::INACTIVE);
+
+        $this->client->jsonRequest('PATCH', sprintf('/api/v1/customers/%d', $customer->getId()), ['status' => 'ACTIVE'], ['HTTP_X_CSRF_TOKEN' => 'invalid-token']);
+
+        self::assertResponseStatusCodeSame(403);
+        self::assertSame('csrf_token_invalid', json_decode($this->client->getResponse()->getContent(), true)['error']['code']);
+        $this->entityManager->clear();
+        self::assertSame(CustomerStatus::INACTIVE, $this->entityManager->find(Customer::class, $customer->getId())->getStatus());
     }
 
     public function testMalformedJsonReturnsBadRequest(): void
@@ -161,6 +204,79 @@ final class CustomerControllerTest extends WebTestCase
         self::assertSame('validation_failed', json_decode($client->getResponse()->getContent(), true)['error']['code']);
     }
 
+    public function testMalformedPatchJsonReturnsBadRequest(): void
+    {
+        $customer = $this->createCustomer(CustomerStatus::INACTIVE);
+        $this->client->request('PATCH', sprintf('/api/v1/customers/%d', $customer->getId()), [], [], [
+            'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_CSRF_TOKEN' => $this->csrfToken,
+        ], '{');
+
+        self::assertResponseStatusCodeSame(400);
+        self::assertSame('invalid_json', json_decode($this->client->getResponse()->getContent(), true)['error']['code']);
+        $this->entityManager->clear();
+        self::assertSame(CustomerStatus::INACTIVE, $this->entityManager->find(Customer::class, $customer->getId())->getStatus());
+    }
+
+    #[DataProvider('invalidPatchPayloadProvider')]
+    public function testInvalidPatchPayloadDoesNotPersist(array $payload): void
+    {
+        $customer = $this->createCustomer(CustomerStatus::INACTIVE);
+        $this->client->jsonRequest('PATCH', sprintf('/api/v1/customers/%d', $customer->getId()), $payload, ['HTTP_X_CSRF_TOKEN' => $this->csrfToken]);
+
+        self::assertResponseStatusCodeSame(400);
+        self::assertSame('invalid_input', json_decode($this->client->getResponse()->getContent(), true)['error']['code']);
+        $this->entityManager->clear();
+        self::assertSame(CustomerStatus::INACTIVE, $this->entityManager->find(Customer::class, $customer->getId())->getStatus());
+    }
+
+    public static function invalidPatchPayloadProvider(): iterable
+    {
+        yield 'missing status' => [[]];
+        yield 'non-string status' => [['status' => ['ACTIVE']]];
+        yield 'unsupported status' => [['status' => 'PENDING']];
+    }
+
+    #[DataProvider('validCustomerProvider')]
+    public function testAdminPatchUpdatesStatusAndReturnsFullCustomer(string $status): void
+    {
+        $customer = $this->createCustomer(CustomerStatus::INACTIVE);
+
+        $this->client->jsonRequest('PATCH', sprintf('/api/v1/customers/%d', $customer->getId()), ['status' => $status], ['HTTP_X_CSRF_TOKEN' => $this->csrfToken]);
+
+        self::assertResponseStatusCodeSame(200);
+        self::assertSame([
+            'id' => $customer->getId(),
+            'name' => 'Grace Hopper',
+            'email' => 'grace@example.com',
+            'status' => $status,
+        ], json_decode($this->client->getResponse()->getContent(), true));
+        $this->entityManager->clear();
+        self::assertSame(CustomerStatus::from($status), $this->entityManager->find(Customer::class, $customer->getId())->getStatus());
+    }
+
+    public function testAdminPatchWithSameStatusIsIdempotent(): void
+    {
+        $customer = $this->createCustomer(CustomerStatus::ACTIVE);
+
+        $this->client->jsonRequest('PATCH', sprintf('/api/v1/customers/%d', $customer->getId()), ['status' => 'ACTIVE'], ['HTTP_X_CSRF_TOKEN' => $this->csrfToken]);
+
+        self::assertResponseStatusCodeSame(200);
+        self::assertSame('ACTIVE', json_decode($this->client->getResponse()->getContent(), true)['status']);
+    }
+
+    public function testPatchUnknownCustomerReturnsNotFound(): void
+    {
+        $this->client->jsonRequest('PATCH', '/api/v1/customers/2147483647', ['status' => 'ACTIVE'], ['HTTP_X_CSRF_TOKEN' => $this->csrfToken]);
+
+        self::assertResponseStatusCodeSame(404);
+        self::assertSame(['error' => [
+            'code' => 'customer_not_found',
+            'message' => 'Customer not found.',
+            'details' => [],
+        ]], json_decode($this->client->getResponse()->getContent(), true));
+    }
+
     #[DataProvider('validCustomerProvider')]
     public function testValidCustomerIsCreatedAndPersisted(string $status): void
     {
@@ -211,6 +327,16 @@ final class CustomerControllerTest extends WebTestCase
         ], json_decode($this->client->getResponse()->getContent(), true));
     }
 
+    public function testInactiveCustomerRemainsVisibleThroughGet(): void
+    {
+        $customer = $this->createCustomer(CustomerStatus::INACTIVE);
+
+        $this->client->request('GET', sprintf('/api/v1/customers/%d', $customer->getId()));
+
+        self::assertResponseIsSuccessful();
+        self::assertSame('INACTIVE', json_decode($this->client->getResponse()->getContent(), true)['status']);
+    }
+
     public function testMissingCustomerReturnsNotFound(): void
     {
         $this->client->request('GET', '/api/v1/customers/2147483647');
@@ -232,5 +358,17 @@ final class CustomerControllerTest extends WebTestCase
         $this->entityManager->flush();
 
         return $user;
+    }
+
+    private function createCustomer(CustomerStatus $status): Customer
+    {
+        $customer = (new Customer())
+            ->setName('Grace Hopper')
+            ->setEmail('grace@example.com')
+            ->setStatus($status);
+        $this->entityManager->persist($customer);
+        $this->entityManager->flush();
+
+        return $customer;
     }
 }

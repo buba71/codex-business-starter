@@ -1,0 +1,17 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Customer administration{% endblock %}
+
+{% block body %}
+    <main id="main-content" class="content-layout">
+        <header class="page-header">
+            <p class="eyebrow">{{ app_brand.name }}</p>
+            <h1>Customer administration</h1>
+        </header>
+
+        <section aria-labelledby="customer-status-heading">
+            <h2 id="customer-status-heading" class="visually-hidden">Customer status</h2>
+            <div {{ vue_component('CustomerStatusAdmin', { id: id }) }}></div>
+        </section>
+    </main>
+{% endblock %}
